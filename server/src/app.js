@@ -15,7 +15,7 @@ export function createApp(deps) {
         return
       }
       const status = error instanceof HttpError ? error.status : 500
-      const message = error instanceof HttpError ? error.message : '服务器内部错误'
+      const message = error instanceof HttpError ? error.message : 'Internal server error'
       if (!(error instanceof HttpError)) console.error(error)
       sendJSON(res, status, { error: message })
     }

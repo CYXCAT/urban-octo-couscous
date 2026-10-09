@@ -12,12 +12,12 @@ export function registerChatRoutes(router) {
   router.post('/sessions/:id/messages', async (ctx) => {
     const user = ctx.requireUser()
     const session = ctx.deps.db.getSession(user.id, ctx.params.id)
-    if (!session) throw new HttpError(404, '对话不存在')
+    if (!session) throw new HttpError(404, 'Conversation not found')
 
     const body = await ctx.readJSON()
     const content = typeof body.content === 'string' ? body.content.trim() : ''
-    if (!content) throw new HttpError(400, '消息不能为空')
-    if (Array.from(content).length > 32000) throw new HttpError(400, '消息太长')
+    if (!content) throw new HttpError(400, 'Message cannot be empty')
+    if (Array.from(content).length > 32000) throw new HttpError(400, 'Message is too long')
 
     const history = ctx.deps.db.listMessages(user.id, session.id) ?? []
     const abort = new AbortController()
@@ -38,9 +38,9 @@ export function registerChatRoutes(router) {
       })
     } catch (error) {
       if (error instanceof HttpError) throw error
-      if (timeout.aborted) throw new HttpError(504, '模型响应超时')
+      if (timeout.aborted) throw new HttpError(504, 'The model timed out')
       if (abort.signal.aborted) return
-      throw new HttpError(502, '连不上模型接口')
+      throw new HttpError(502, 'Could not reach the model API')
     }
 
     const userMessage = ctx.deps.db.addMessage(session.id, 'user', content)
@@ -85,9 +85,9 @@ export function registerChatRoutes(router) {
     }
 
     if (failed) {
-      send({ type: 'error', error: failed.message || '生成中断' })
+      send({ type: 'error', error: failed.message || 'Generation interrupted' })
     } else if (!full.trim() && !abort.signal.aborted) {
-      send({ type: 'error', error: '模型没有返回内容' })
+      send({ type: 'error', error: 'The model returned no content' })
     }
 
     if (!ctx.res.writableEnded) ctx.res.end()

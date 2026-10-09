@@ -9,7 +9,7 @@ export function registerAuthRoutes(router) {
   router.post('/auth/google', async (ctx) => {
     const body = await ctx.readJSON()
     const idToken = typeof body.idToken === 'string' ? body.idToken.trim() : ''
-    if (!idToken) throw new HttpError(400, '缺少 Google 身份令牌')
+    if (!idToken) throw new HttpError(400, 'Missing Google ID token')
     const profile = await verifyGoogleIDToken(idToken, ctx.deps.config.googleClientId)
     const user = ctx.deps.db.upsertGoogleUser(profile)
     const token = ctx.deps.db.createToken(user.id)

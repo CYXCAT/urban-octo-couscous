@@ -26,7 +26,7 @@ export function publishService(port) {
   child.stdout?.on('data', log)
   child.stderr?.on('data', log)
   child.on('error', (error) => {
-    console.error(`[bonjour] 无法发布本机服务：${error.message}`)
+    console.error(`[bonjour] Could not publish the local service: ${error.message}`)
   })
 
   return () => {

@@ -31,7 +31,7 @@ export function consumeSSEBuffer(buffer, { flush = false } = {}) {
     if (json.error) {
       error = typeof json.error === 'string'
         ? json.error
-        : (json.error.message || '模型请求失败')
+        : (json.error.message || 'Model request failed')
       break
     }
 
@@ -49,16 +49,16 @@ async function readErrorMessage(response) {
     if (typeof json.error === 'string') return json.error
     if (json.error?.message) return json.error.message
   } catch {
-    // 保留原始文本
+    // Keep the raw text.
   }
   const compact = text.replace(/\s+/g, ' ').trim()
-  if (!compact) return `模型请求失败（${response.status}）`
+  if (!compact) return `Model request failed (${response.status})`
   return compact.slice(0, 300)
 }
 
 export async function openChatCompletion({ config, messages, signal }) {
   if (!config.llmApiKey) {
-    throw new HttpError(503, '服务器还没有配置 LLM_API_KEY。请在 server/.env 中填写后重启服务。')
+    throw new HttpError(503, 'LLM_API_KEY is not set. Add it to server/.env and restart the server.')
   }
 
   let response
@@ -81,13 +81,13 @@ export async function openChatCompletion({ config, messages, signal }) {
     })
   } catch (error) {
     if (signal?.aborted) throw error
-    throw new HttpError(502, '连不上模型接口')
+    throw new HttpError(502, 'Could not reach the model API')
   }
 
   if (!response.ok) {
     throw new HttpError(502, await readErrorMessage(response))
   }
-  if (!response.body) throw new HttpError(502, '模型没有返回数据')
+  if (!response.body) throw new HttpError(502, 'The model returned no data')
   return response
 }
 

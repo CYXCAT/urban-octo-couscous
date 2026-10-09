@@ -3,12 +3,12 @@ import test from 'node:test'
 import { consumeSSEBuffer } from '../src/llm.js'
 
 test('parses SSE deltas split across chunks', () => {
-  const first = consumeSSEBuffer('data: {"choices":[{"delta":{"content":"你"}}]}\n\ndata: {"cho')
-  assert.deepEqual(first.deltas, ['你'])
+  const first = consumeSSEBuffer('data: {"choices":[{"delta":{"content":"Hi"}}]}\n\ndata: {"cho')
+  assert.deepEqual(first.deltas, ['Hi'])
   assert.equal(first.done, false)
 
-  const second = consumeSSEBuffer(`${first.rest}ices":[{"delta":{"content":"好"}}]}\n\ndata: [DONE]\n`)
-  assert.deepEqual(second.deltas, ['好'])
+  const second = consumeSSEBuffer(`${first.rest}ices":[{"delta":{"content":"!"}}]}\n\ndata: [DONE]\n`)
+  assert.deepEqual(second.deltas, ['!'])
   assert.equal(second.done, true)
 })
 

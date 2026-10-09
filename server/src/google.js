@@ -12,16 +12,16 @@ export async function verifyGoogleIDToken(idToken, clientId) {
       clockTolerance: 30,
     }))
   } catch {
-    throw new HttpError(401, 'Google 登录无效')
+    throw new HttpError(401, 'Google sign-in is invalid')
   }
 
-  if (!payload.sub) throw new HttpError(401, 'Google 登录无效')
+  if (!payload.sub) throw new HttpError(401, 'Google sign-in is invalid')
   if (payload.email_verified === false) {
-    throw new HttpError(401, 'Google 账号邮箱尚未验证')
+    throw new HttpError(401, 'Google account email is not verified')
   }
 
   const email = payload.email || `${payload.sub}@users.google.invalid`
-  const name = payload.name || payload.email || 'Google 用户'
+  const name = payload.name || payload.email || 'Google user'
   return {
     sub: String(payload.sub),
     email: String(email),

@@ -9,7 +9,7 @@ function tokenHash(token) {
 
 function titleFrom(text) {
   const compact = text.replace(/\s+/g, ' ').trim()
-  if (!compact) return '新对话'
+  if (!compact) return 'New chat'
   const chars = Array.from(compact)
   if (chars.length <= 24) return compact
   return `${chars.slice(0, 24).join('')}…`
@@ -115,7 +115,7 @@ class Repository {
     const now = new Date().toISOString()
     this.db.prepare(
       `INSERT INTO sessions (id, user_id, title, created_at, updated_at)
-       VALUES (?, ?, '新对话', ?, ?)`,
+       VALUES (?, ?, 'New chat', ?, ?)`,
     ).run(id, userId, now, now)
     return this.getSession(userId, id)
   }
@@ -167,7 +167,7 @@ class Repository {
         const current = this.db.prepare(
           'SELECT title FROM sessions WHERE id = ?',
         ).get(sessionId)
-        const title = current?.title === '新对话' ? titleFrom(content) : (current?.title ?? '新对话')
+        const title = current?.title === 'New chat' ? titleFrom(content) : (current?.title ?? 'New chat')
         this.db.prepare(
           'UPDATE sessions SET title = ?, updated_at = ? WHERE id = ?',
         ).run(title, now, sessionId)

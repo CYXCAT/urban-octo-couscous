@@ -22,7 +22,7 @@ let stopDiscovery = () => {}
 server.on('error', (error) => {
   stopDiscovery()
   if (error.code === 'EADDRINUSE') {
-    console.error(`端口 ${config.port} 已被占用`)
+    console.error(`Port ${config.port} is already in use`)
   } else {
     console.error(error)
   }
@@ -41,13 +41,13 @@ process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
 
 server.listen(config.port, config.host, () => {
-  console.log('hajimi 服务已启动')
-  console.log(`  本机   http://127.0.0.1:${config.port}`)
+  console.log('hajimi server is running')
+  console.log(`  local  http://127.0.0.1:${config.port}`)
   for (const address of lanIPv4()) {
-    console.log(`  局域网 http://${address}:${config.port}`)
+    console.log(`  lan    http://${address}:${config.port}`)
   }
   if (!config.llmApiKey) {
-    console.log('尚未配置 LLM_API_KEY。可以登录和创建会话，但发送消息会失败。')
+    console.log('LLM_API_KEY is not set. Sign-in and sessions work, but sending messages will fail.')
   }
   stopDiscovery = publishService(config.port)
 })

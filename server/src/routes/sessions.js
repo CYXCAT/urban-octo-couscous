@@ -15,14 +15,14 @@ export function registerSessionRoutes(router) {
   router.delete('/sessions/:id', async (ctx) => {
     const user = ctx.requireUser()
     const deleted = ctx.deps.db.deleteSession(user.id, ctx.params.id)
-    if (!deleted) throw new HttpError(404, '对话不存在')
+    if (!deleted) throw new HttpError(404, 'Conversation not found')
     ctx.json(200, { ok: true })
   })
 
   router.get('/sessions/:id/messages', async (ctx) => {
     const user = ctx.requireUser()
     const messages = ctx.deps.db.listMessages(user.id, ctx.params.id)
-    if (!messages) throw new HttpError(404, '对话不存在')
+    if (!messages) throw new HttpError(404, 'Conversation not found')
     ctx.json(200, { messages })
   })
 }

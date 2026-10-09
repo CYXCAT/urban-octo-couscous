@@ -68,12 +68,12 @@ test('auth, sessions, and missing model key', async (t) => {
   })
   assert.equal(created.status, 201)
   const session = await created.json()
-  assert.equal(session.title, '新对话')
+  assert.equal(session.title, 'New chat')
 
   const sent = await fetch(`${base}/sessions/${session.id}/messages`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ content: '你好' }),
+    body: JSON.stringify({ content: 'Hello' }),
   })
   assert.equal(sent.status, 503)
   const sentBody = await sent.json()
@@ -122,10 +122,10 @@ test('session titles stay with the owner and messages cascade', () => {
       picture: null,
     })
     const session = db.createSession(user.id)
-    db.addMessage(session.id, 'user', '  今天   天气怎么样  ')
-    assert.equal(db.getSession(user.id, session.id).title, '今天 天气怎么样')
-    db.addMessage(session.id, 'user', '第二条')
-    assert.equal(db.getSession(user.id, session.id).title, '今天 天气怎么样')
+    db.addMessage(session.id, 'user', '  how   is the weather  ')
+    assert.equal(db.getSession(user.id, session.id).title, 'how is the weather')
+    db.addMessage(session.id, 'user', 'second')
+    assert.equal(db.getSession(user.id, session.id).title, 'how is the weather')
     assert.equal(db.getSession(other.id, session.id), null)
 
     const longSession = db.createSession(user.id)
