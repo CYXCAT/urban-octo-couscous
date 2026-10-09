@@ -10,6 +10,10 @@
 		3F4E17D130799B8900AB3735 /* hajimi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hajimi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXBuildFile section */
+		7C1E5B9A2D4F4A6E8B0C1D33 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 7C1E5B9A2D4F4A6E8B0C1D22 /* GoogleSignIn */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3F4E17D330799B8900AB3735 /* hajimi */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C1E5B9A2D4F4A6E8B0C1D33 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = hajimi;
 			packageProductDependencies = (
+				7C1E5B9A2D4F4A6E8B0C1D22 /* GoogleSignIn */,
 			);
 			productName = hajimi;
 			productReference = 3F4E17D130799B8900AB3735 /* hajimi.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 3F4E17C830799B8900AB3735;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7C1E5B9A2D4F4A6E8B0C1D11 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3F4E17D230799B8900AB3735 /* Products */;
 			projectDirPath = "";
@@ -256,6 +265,7 @@
 				DEVELOPMENT_TEAM = WZKH4UK28P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -288,6 +298,7 @@
 				DEVELOPMENT_TEAM = WZKH4UK28P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -332,6 +343,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7C1E5B9A2D4F4A6E8B0C1D11 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7C1E5B9A2D4F4A6E8B0C1D22 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7C1E5B9A2D4F4A6E8B0C1D11 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3F4E17C930799B8900AB3735 /* Project object */;
 }

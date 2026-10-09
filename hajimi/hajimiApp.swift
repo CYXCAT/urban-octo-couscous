@@ -1,17 +1,17 @@
-//
-//  hajimiApp.swift
-//  hajimi
-//
-//  Created by Yingxiao on 10/9/26.
-//
-
 import SwiftUI
 
 @main
 struct hajimiApp: App {
+    @State private var appModel = AppModel()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environment(appModel)
+                .task { await appModel.bootstrap() }
+                .onOpenURL { url in
+                    GoogleAuth.handle(url)
+                }
         }
     }
 }
