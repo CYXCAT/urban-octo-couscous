@@ -3,14 +3,16 @@ import SwiftUI
 struct ChatView: View {
     @Bindable var store: SessionStore
     @State private var draft = ""
+    @State private var draftBeforeRecognition = ""
+    @State private var voice = VoiceController()
 
     var body: some View {
         Group {
             if store.messages.isEmpty && !store.isSending {
                 ContentUnavailableView(
-                    "开始对话",
+                    "Start a chat",
                     systemImage: "text.bubble",
-                    description: Text("发一条消息")
+                    description: Text("Send a message")
                 )
             } else {
                 ScrollViewReader { proxy in
@@ -19,7 +21,11 @@ struct ChatView: View {
                             ForEach(store.messages) { message in
                                 MessageBubble(
                                     message: message,
-                                    isStreaming: store.isSending && message.id == store.messages.last?.id
+                                    isStreaming: store.isSending && message.id == store.messages.last?.id,
+                                    isSpeaking: voice.speakingMessageID == message.id,
+                                    onToggleSpeaking: {
+                                        voice.toggleSpeaking(messageID: message.id, text: message.content)
+                                    }
                                 )
                                 .id(message.id)
                             }
@@ -42,30 +48,62 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) { composer }
         .task { await store.loadMessages() }
+        .onChange(of: voice.transcript) { _, transcript in
+            guard voice.isListening || !transcript.isEmpty else { return }
+            let separator = draftBeforeRecognition.isEmpty || transcript.isEmpty ? "" : " "
+            draft = draftBeforeRecognition + separator + transcript
+        }
+        .onDisappear { voice.stopAll() }
+        .alert("Voice unavailable", isPresented: Binding(
+            get: { voice.errorMessage != nil },
+            set: { if !$0 { voice.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(voice.errorMessage ?? "")
+        }
     }
 
     private var title: String {
-        store.sessions.first { $0.id == store.activeSessionID }?.title ?? "对话"
+        store.sessions.first { $0.id == store.activeSessionID }?.title ?? "Chat"
     }
 
     private var composer: some View {
         HStack(alignment: .bottom, spacing: 8) {
-            TextField("发送消息", text: $draft, axis: .vertical)
+            Button {
+                if voice.isListening {
+                    voice.stopTranscribing()
+                } else {
+                    draftBeforeRecognition = draft
+                    Task { await voice.startTranscribing() }
+                }
+            } label: {
+                Image(systemName: voice.isListening ? "waveform.circle.fill" : "mic.circle.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(voice.isListening ? Color.red : Color.accentColor)
+                    .symbolEffect(.pulse, isActive: voice.isListening)
+            }
+            .disabled(store.isSending)
+            .accessibilityLabel(voice.isListening ? "Stop dictation" : "Start dictation")
+
+            TextField("Message", text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
                 .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 18))
 
             Button {
+                voice.cancelTranscribing()
                 let text = draft
                 draft = ""
+                draftBeforeRecognition = ""
                 Task { await store.send(text) }
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 32))
             }
             .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || store.isSending)
-            .accessibilityLabel("发送")
+            .accessibilityLabel("Send")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -76,6 +114,8 @@ struct ChatView: View {
 private struct MessageBubble: View {
     let message: ChatMessage
     let isStreaming: Bool
+    let isSpeaking: Bool
+    let onToggleSpeaking: () -> Void
 
     var body: some View {
         HStack {
@@ -94,6 +134,19 @@ private struct MessageBubble: View {
                 Text(markdown)
             } else {
                 Text(message.content)
+            }
+
+            if message.role == .assistant && !message.content.isEmpty {
+                Button(action: onToggleSpeaking) {
+                    Label(
+                        isSpeaking ? "Stop speaking" : "Read aloud",
+                        systemImage: isSpeaking ? "stop.circle.fill" : "speaker.wave.2.fill"
+                    )
+                    .font(.caption)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .disabled(isStreaming)
             }
         }
         .textSelection(.enabled)

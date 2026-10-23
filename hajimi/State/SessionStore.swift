@@ -117,7 +117,7 @@ final class SessionStore {
                         apply(session)
                     }
                 case "error":
-                    errorMessage = event.error ?? "生成失败"
+                    errorMessage = event.error ?? "Generation failed"
                     removeEmptyAssistant(id: assistantLocalID)
                 default:
                     break

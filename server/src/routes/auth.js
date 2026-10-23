@@ -11,19 +11,19 @@ export function registerAuthRoutes(router) {
     const idToken = typeof body.idToken === 'string' ? body.idToken.trim() : ''
     if (!idToken) throw new HttpError(400, 'Missing Google ID token')
     const profile = await verifyGoogleIDToken(idToken, ctx.deps.config.googleClientId)
-    const user = ctx.deps.db.upsertGoogleUser(profile)
-    const token = ctx.deps.db.createToken(user.id)
+    const user = await ctx.deps.db.upsertGoogleUser(profile)
+    const token = await ctx.deps.db.createToken(user.id)
     ctx.json(200, { token, user })
   })
 
   router.post('/auth/logout', async (ctx) => {
     const header = ctx.req.headers.authorization || ''
     const match = /^Bearer\s+(\S+)$/.exec(header)
-    if (match) ctx.deps.db.deleteToken(match[1])
+    if (match) await ctx.deps.db.deleteToken(match[1])
     ctx.json(200, { ok: true })
   })
 
   router.get('/me', async (ctx) => {
-    ctx.json(200, { user: ctx.requireUser() })
+    ctx.json(200, { user: await ctx.requireUser() })
   })
 }

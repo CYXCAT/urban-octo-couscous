@@ -54,11 +54,11 @@ class Context {
     }
   }
 
-  requireUser() {
+  async requireUser() {
     const header = this.req.headers.authorization || ''
     const match = /^Bearer\s+(\S+)$/.exec(header)
     if (!match) throw new HttpError(401, 'Not signed in')
-    const user = this.deps.db.userForToken(match[1])
+    const user = await this.deps.db.userForToken(match[1])
     if (!user) throw new HttpError(401, 'Session expired')
     return user
   }

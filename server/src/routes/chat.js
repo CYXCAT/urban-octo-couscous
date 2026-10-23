@@ -10,8 +10,8 @@ function modelMessages(history, content) {
 
 export function registerChatRoutes(router) {
   router.post('/sessions/:id/messages', async (ctx) => {
-    const user = ctx.requireUser()
-    const session = ctx.deps.db.getSession(user.id, ctx.params.id)
+    const user = await ctx.requireUser()
+    const session = await ctx.deps.db.getSession(user.id, ctx.params.id)
     if (!session) throw new HttpError(404, 'Conversation not found')
 
     const body = await ctx.readJSON()
@@ -19,7 +19,7 @@ export function registerChatRoutes(router) {
     if (!content) throw new HttpError(400, 'Message cannot be empty')
     if (Array.from(content).length > 32000) throw new HttpError(400, 'Message is too long')
 
-    const history = ctx.deps.db.listMessages(user.id, session.id) ?? []
+    const history = await ctx.deps.db.listMessages(user.id, session.id) ?? []
     const abort = new AbortController()
     const timeout = AbortSignal.timeout(180_000)
     const signal = AbortSignal.any([abort.signal, timeout])
@@ -43,8 +43,8 @@ export function registerChatRoutes(router) {
       throw new HttpError(502, 'Could not reach the model API')
     }
 
-    const userMessage = ctx.deps.db.addMessage(session.id, 'user', content)
-    const sessionAfterUser = ctx.deps.db.getSession(user.id, session.id)
+    const userMessage = await ctx.deps.db.addMessage(session.id, 'user', content)
+    const sessionAfterUser = await ctx.deps.db.getSession(user.id, session.id)
 
     ctx.res.writeHead(200, {
       'Content-Type': 'text/event-stream; charset=utf-8',
@@ -76,11 +76,11 @@ export function registerChatRoutes(router) {
     }
 
     if (full.trim()) {
-      const assistant = ctx.deps.db.addMessage(session.id, 'assistant', full)
+      const assistant = await ctx.deps.db.addMessage(session.id, 'assistant', full)
       send({
         type: 'done',
         message: assistant,
-        session: ctx.deps.db.getSession(user.id, session.id),
+        session: await ctx.deps.db.getSession(user.id, session.id),
       })
     }
 

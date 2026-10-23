@@ -11,20 +11,20 @@ struct SessionSplitView: View {
         } detail: {
             if store.activeSessionID == nil {
                 ContentUnavailableView(
-                    "选择一个对话",
+                    "Select a chat",
                     systemImage: "bubble.left.and.bubble.right",
-                    description: Text("新建对话后即可开始")
+                    description: Text("Create a chat to get started")
                 )
             } else {
                 ChatView(store: store)
                     .id(store.activeSessionID)
             }
         }
-        .alert("出错了", isPresented: Binding(
+        .alert("Something went wrong", isPresented: Binding(
             get: { store.errorMessage != nil },
             set: { if !$0 { store.errorMessage = nil } }
         )) {
-            Button("好", role: .cancel) {}
+            Button("OK", role: .cancel) {}
         } message: {
             Text(store.errorMessage ?? "")
         }
@@ -43,9 +43,9 @@ struct SessionListView: View {
                 ProgressView()
             } else if store.sessions.isEmpty {
                 ContentUnavailableView(
-                    "还没有对话",
+                    "No chats yet",
                     systemImage: "bubble.left.and.bubble.right",
-                    description: Text("点右上角新建")
+                    description: Text("Tap the button at the top right to create one")
                 )
             } else {
                 List(selection: Binding(
@@ -70,11 +70,11 @@ struct SessionListView: View {
                 }
             }
         }
-        .navigationTitle("对话")
+        .navigationTitle("Chats")
         .refreshable { await store.reloadSessions() }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("退出") { showingSignOut = true }
+                Button("Sign Out") { showingSignOut = true }
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -82,14 +82,14 @@ struct SessionListView: View {
                 } label: {
                     Image(systemName: "square.and.pencil")
                 }
-                .accessibilityLabel("新对话")
+                .accessibilityLabel("New chat")
             }
         }
-        .confirmationDialog("退出登录？", isPresented: $showingSignOut, titleVisibility: .visible) {
-            Button("退出", role: .destructive) {
+        .confirmationDialog("Sign out?", isPresented: $showingSignOut, titleVisibility: .visible) {
+            Button("Sign Out", role: .destructive) {
                 Task { await appModel.signOut() }
             }
-            Button("取消", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
             if let email = appModel.user?.email {
                 Text(email)

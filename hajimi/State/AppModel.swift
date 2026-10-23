@@ -3,7 +3,6 @@ import Observation
 
 @Observable
 final class AppModel {
-    var serverURLText: String
     var isBusy = false
     var isServerReady = false
     var statusMessage: String?
@@ -13,16 +12,9 @@ final class AppModel {
     var api: APIClient?
 
     private var didStart = false
-    private static let serverURLKey = "hajimi.serverURL"
-
     enum Phase {
         case signedOut
         case signedIn
-    }
-
-    init() {
-        serverURLText = UserDefaults.standard.string(forKey: Self.serverURLKey)
-            ?? AppConfig.defaultServerURL.absoluteString
     }
 
     func bootstrap() async {
@@ -54,7 +46,7 @@ final class AppModel {
             phase = .signedIn
         } catch let error as AuthError {
             if case .cancelled = error { return }
-            errorMessage = error.errorDescription ?? "Google 登录失败"
+            errorMessage = error.errorDescription ?? "Google sign-in failed"
         } catch {
             errorMessage = describeRequestError(error)
         }
@@ -72,7 +64,7 @@ final class AppModel {
     private func connect(restoreSession: Bool) async {
         errorMessage = nil
         isBusy = true
-        statusMessage = "正在连接本机服务…"
+        statusMessage = "Connecting…"
         defer {
             isBusy = false
             if isServerReady {
@@ -80,24 +72,14 @@ final class AppModel {
             }
         }
 
-        guard let preferred = ServerURL.parse(serverURLText) else {
+        let client = APIClient(baseURL: AppConfig.apiBaseURL)
+        guard await client.isHealthy() else {
             isServerReady = false
             statusMessage = nil
-            errorMessage = "服务器地址无效"
+            errorMessage = "The service is temporarily unavailable. Please try again."
             return
         }
 
-        let found = await ServerLocator().resolve(preferred: preferred)
-        guard let found else {
-            isServerReady = false
-            statusMessage = nil
-            errorMessage = "没有找到本机服务。请先在电脑上运行 server，或填写局域网地址。"
-            return
-        }
-
-        serverURLText = found.absoluteString
-        UserDefaults.standard.set(found.absoluteString, forKey: Self.serverURLKey)
-        let client = APIClient(baseURL: found)
         client.onUnauthorized = { [weak self] in
             self?.handleUnauthorized()
         }
@@ -122,6 +104,6 @@ final class AppModel {
         api?.token = nil
         user = nil
         phase = .signedOut
-        errorMessage = "登录已过期，请重新登录"
+        errorMessage = "Session expired. Sign in again."
     }
 }

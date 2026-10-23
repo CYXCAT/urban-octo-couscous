@@ -15,16 +15,9 @@
 			</array>
 		</dict>
 	</array>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>hajimi 需要在本地网络查找并连接你电脑上的服务。</string>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_hajimi._tcp</string>
-	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>hajimi uses the microphone to turn your speech into chat messages.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>hajimi uses speech recognition to transcribe your voice into text.</string>
 </dict>
 </plist>

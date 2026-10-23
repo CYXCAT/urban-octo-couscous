@@ -11,12 +11,12 @@ func describeRequestError(_ error: Error) -> String {
         return apiError.message
     }
     if error is CancellationError {
-        return "已取消"
+        return "Cancelled"
     }
     if let urlError = error as? URLError {
         switch urlError.code {
         case .notConnectedToInternet, .cannotConnectToHost, .cannotFindHost, .networkConnectionLost, .timedOut:
-            return "连不上本机服务。请确认服务器已启动，并且手机和电脑在同一网络。"
+            return "Could not reach the local server. Make sure it is running and that your phone and computer are on the same network."
         default:
             break
         }

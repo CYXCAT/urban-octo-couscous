@@ -9,6 +9,18 @@ final class APIClient {
         self.baseURL = baseURL
     }
 
+    func isHealthy() async -> Bool {
+        var request = URLRequest(url: endpoint(["health"]))
+        request.timeoutInterval = 10
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        do {
+            let (_, response) = try await URLSession.shared.data(for: request)
+            return (response as? HTTPURLResponse)?.statusCode == 200
+        } catch {
+            return false
+        }
+    }
+
     func login(idToken: String) async throws -> AuthSession {
         let result: LoginResponse = try await request(
             method: "POST",
@@ -72,7 +84,7 @@ final class APIClient {
                 do {
                     let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
                     guard let http = response as? HTTPURLResponse else {
-                        throw APIError(message: "无效响应")
+                        throw APIError(message: "Invalid response")
                     }
                     if !(200..<300).contains(http.statusCode) {
                         var data = Data()
@@ -118,7 +130,7 @@ final class APIClient {
         )
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         guard let http = response as? HTTPURLResponse else {
-            throw APIError(message: "无效响应")
+            throw APIError(message: "Invalid response")
         }
         if !(200..<300).contains(http.statusCode) {
             try reject(http, data: data)
@@ -126,7 +138,7 @@ final class APIClient {
         do {
             return try APICoding.decoder.decode(Response.self, from: data)
         } catch {
-            throw APIError(message: "服务器响应无法解析")
+            throw APIError(message: "Could not parse the server response")
         }
     }
 
@@ -147,7 +159,7 @@ final class APIClient {
             urlRequest.httpBody = try APICoding.encoder.encode(body)
         }
         if authenticated {
-            guard let token else { throw APIError(message: "未登录") }
+            guard let token else { throw APIError(message: "Not signed in") }
             urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         return urlRequest
@@ -158,7 +170,7 @@ final class APIClient {
         if http.statusCode == 401, token != nil {
             onUnauthorized?()
         }
-        throw APIError(message: serverMessage ?? "请求失败（\(http.statusCode)）")
+        throw APIError(message: serverMessage ?? "Request failed (\(http.statusCode))")
     }
 
     private func endpoint(_ parts: [String]) -> URL {

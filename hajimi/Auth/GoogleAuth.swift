@@ -28,20 +28,20 @@ enum GoogleAuth {
     static func idToken() async throws -> String {
         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: AppConfig.googleClientID)
         guard let presenter = RootPresenter.viewController() else {
-            throw AuthError.message("无法打开登录窗口")
+            throw AuthError.message("Could not open the sign-in window")
         }
 
         do {
             let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenter)
             guard let token = result.user.idToken?.tokenString, !token.isEmpty else {
-                throw AuthError.message("Google 没有返回身份令牌")
+                throw AuthError.message("Google did not return an ID token")
             }
             return token
         } catch let error as AuthError {
             throw error
         } catch {
             if isCancelled(error) { throw AuthError.cancelled }
-            throw AuthError.message("Google 登录失败：\(error.localizedDescription)")
+            throw AuthError.message("Google sign-in failed: \(error.localizedDescription)")
         }
     }
 

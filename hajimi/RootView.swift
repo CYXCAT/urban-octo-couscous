@@ -22,7 +22,7 @@ struct SignedInView: View {
             if let store {
                 SessionSplitView(store: store)
             } else {
-                ProgressView("正在打开对话")
+                ProgressView("Opening chats")
             }
         }
         .task {

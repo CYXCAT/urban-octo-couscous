@@ -18,7 +18,7 @@ enum KeychainStore {
         insert[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         let status = SecItemAdd(insert as CFDictionary, nil)
         guard status == errSecSuccess else {
-            throw APIError(message: "无法保存登录状态")
+            throw APIError(message: "Could not save the sign-in session")
         }
     }
 
