@@ -42,6 +42,35 @@ class Repository {
     this.db.close()
   }
 
+  recordConnection(info) {
+    const seenAt = info.seenAt.toISOString()
+    this.db.prepare(
+      `INSERT INTO client_connections (
+         client_id, ip, city, region, country, latitude, longitude,
+         device_model, os_version, app_version, user_agent, last_path,
+         request_count, first_seen, last_seen
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+       ON CONFLICT (client_id) DO UPDATE SET
+         ip = excluded.ip,
+         city = COALESCE(excluded.city, client_connections.city),
+         region = COALESCE(excluded.region, client_connections.region),
+         country = COALESCE(excluded.country, client_connections.country),
+         latitude = COALESCE(excluded.latitude, client_connections.latitude),
+         longitude = COALESCE(excluded.longitude, client_connections.longitude),
+         device_model = COALESCE(excluded.device_model, client_connections.device_model),
+         os_version = COALESCE(excluded.os_version, client_connections.os_version),
+         app_version = COALESCE(excluded.app_version, client_connections.app_version),
+         user_agent = excluded.user_agent,
+         last_path = excluded.last_path,
+         request_count = client_connections.request_count + 1,
+         last_seen = excluded.last_seen`,
+    ).run(
+      info.clientId, info.ip, info.city, info.region, info.country,
+      info.latitude, info.longitude, info.deviceModel, info.osVersion,
+      info.appVersion, info.userAgent, info.path, seenAt, seenAt,
+    )
+  }
+
   userById(id) {
     const row = this.db.prepare(
       'SELECT id, email, name, picture FROM users WHERE id = ?',
@@ -220,8 +249,27 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
   expires_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS client_connections (
+  client_id TEXT PRIMARY KEY,
+  ip TEXT,
+  city TEXT,
+  region TEXT,
+  country TEXT,
+  latitude REAL,
+  longitude REAL,
+  device_model TEXT,
+  os_version TEXT,
+  app_version TEXT,
+  user_agent TEXT,
+  last_path TEXT,
+  request_count INTEGER NOT NULL DEFAULT 1,
+  first_seen TEXT NOT NULL,
+  last_seen TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_client_connections_seen ON client_connections(last_seen DESC);
 `
 
 export function openDatabase(filePath) {

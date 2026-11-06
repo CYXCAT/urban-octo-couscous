@@ -1,3 +1,4 @@
+import { recordConnection } from './connections.js'
 import { HttpError } from './errors.js'
 import { registerRoutes } from './routes/register.js'
 import { createRouter, sendJSON } from './router.js'
@@ -8,6 +9,7 @@ export function createApp(deps) {
 
   return async (req, res) => {
     try {
+      await recordConnection(deps.db, req)
       await router.handle(req, res)
     } catch (error) {
       if (res.headersSent || res.writableEnded) {

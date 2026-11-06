@@ -71,6 +71,10 @@ struct SessionListView: View {
             }
         }
         .navigationTitle("Chats")
+        .safeAreaInset(edge: .bottom) {
+            NetworkStatusView()
+                .padding(.vertical, 8)
+        }
         .refreshable { await store.reloadSessions() }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {

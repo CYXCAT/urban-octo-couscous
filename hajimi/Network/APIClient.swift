@@ -10,14 +10,23 @@ final class APIClient {
     }
 
     func isHealthy() async -> Bool {
+        await ping() != nil
+    }
+
+    /// Calls /health and returns the round-trip time, or nil when the server is unreachable.
+    func ping(timeout: TimeInterval = 10) async -> Duration? {
         var request = URLRequest(url: endpoint(["health"]))
-        request.timeoutInterval = 10
+        request.timeoutInterval = timeout
         request.cachePolicy = .reloadIgnoringLocalCacheData
+        DeviceInfo.apply(to: &request)
+        let clock = ContinuousClock()
+        let start = clock.now
         do {
             let (_, response) = try await URLSession.shared.data(for: request)
-            return (response as? HTTPURLResponse)?.statusCode == 200
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+            return clock.now - start
         } catch {
-            return false
+            return nil
         }
     }
 
@@ -154,6 +163,7 @@ final class APIClient {
         urlRequest.httpMethod = method
         urlRequest.timeoutInterval = timeout
         urlRequest.setValue(accept, forHTTPHeaderField: "Accept")
+        DeviceInfo.apply(to: &urlRequest)
         if let body {
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
             urlRequest.httpBody = try APICoding.encoder.encode(body)

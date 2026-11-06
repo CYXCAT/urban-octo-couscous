@@ -65,8 +65,27 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
   expires_at TIMESTAMPTZ NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS client_connections (
+  client_id TEXT PRIMARY KEY,
+  ip TEXT,
+  city TEXT,
+  region TEXT,
+  country TEXT,
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION,
+  device_model TEXT,
+  os_version TEXT,
+  app_version TEXT,
+  user_agent TEXT,
+  last_path TEXT,
+  request_count INTEGER NOT NULL DEFAULT 1,
+  first_seen TIMESTAMPTZ NOT NULL,
+  last_seen TIMESTAMPTZ NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id, updated_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_client_connections_seen ON client_connections(last_seen DESC);
 `
 
 class PostgresRepository {
@@ -86,6 +105,36 @@ class PostgresRepository {
 
   async close() {
     await this.pool.end()
+  }
+
+  async recordConnection(info) {
+    await this.ready()
+    await this.pool.query(
+      `INSERT INTO client_connections (
+         client_id, ip, city, region, country, latitude, longitude,
+         device_model, os_version, app_version, user_agent, last_path,
+         request_count, first_seen, last_seen
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 1, $13, $13)
+       ON CONFLICT (client_id) DO UPDATE SET
+         ip = EXCLUDED.ip,
+         city = COALESCE(EXCLUDED.city, client_connections.city),
+         region = COALESCE(EXCLUDED.region, client_connections.region),
+         country = COALESCE(EXCLUDED.country, client_connections.country),
+         latitude = COALESCE(EXCLUDED.latitude, client_connections.latitude),
+         longitude = COALESCE(EXCLUDED.longitude, client_connections.longitude),
+         device_model = COALESCE(EXCLUDED.device_model, client_connections.device_model),
+         os_version = COALESCE(EXCLUDED.os_version, client_connections.os_version),
+         app_version = COALESCE(EXCLUDED.app_version, client_connections.app_version),
+         user_agent = EXCLUDED.user_agent,
+         last_path = EXCLUDED.last_path,
+         request_count = client_connections.request_count + 1,
+         last_seen = EXCLUDED.last_seen`,
+      [
+        info.clientId, info.ip, info.city, info.region, info.country,
+        info.latitude, info.longitude, info.deviceModel, info.osVersion,
+        info.appVersion, info.userAgent, info.path, info.seenAt,
+      ],
+    )
   }
 
   async userById(id, queryable = this.pool) {
