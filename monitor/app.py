@@ -136,7 +136,7 @@ def present(row, now):
         "online": bool(last_seen and now - last_seen <= ONLINE_WINDOW),
         "first_seen": first_seen.isoformat() if first_seen else None,
         "last_seen": last_seen.isoformat() if last_seen else None,
-        "last_seen_text": last_seen.astimezone().strftime("%Y-%m-%d %H:%M:%S") if last_seen else "",
+        "last_seen_text": last_seen.astimezone().strftime("%Y-%m-%d %H:%M:%S %Z") if last_seen else "",
     }
 
 

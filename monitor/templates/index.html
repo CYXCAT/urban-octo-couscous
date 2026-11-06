@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="zh">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="refresh" content="15">
-  <title>hajimi 连接监控</title>
+  <title>hajimi Connections</title>
   <style>
     :root { --bg: #f6f7f9; --card: #fff; --text: #1d1f23; --muted: #6b7280; --line: #e5e7eb; --ok: #16a34a; --off: #9ca3af; }
     @media (prefers-color-scheme: dark) {
       :root { --bg: #111317; --card: #1a1d23; --text: #e8eaed; --muted: #9aa0a6; --line: #2a2e36; }
     }
     body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--text);
-           font: 14px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+           font: 14px/1.5 -apple-system, BlinkMacSystemFont, sans-serif; }
     main { max-width: 1200px; margin: 0 auto; }
     h1 { font-size: 22px; margin: 0 0 4px; }
     .meta { color: var(--muted); margin-bottom: 16px; }
@@ -32,25 +32,25 @@
 </head>
 <body>
 <main>
-  <h1>连接服务器的客户端</h1>
-  <div class="meta">数据源：{{ source }} · 每 15 秒自动刷新 · 5 分钟内有请求视为在线</div>
+  <h1>Connected clients</h1>
+  <div class="meta">Source: {{ source }} · Refreshes every 15 s · Online = request in the last 5 min</div>
 
-  {% if error %}<div class="error">读取数据库失败：{{ error }}</div>{% endif %}
+  {% if error %}<div class="error">Could not read the database: {{ error }}</div>{% endif %}
 
   <div class="stats">
-    <div class="stat"><b>{{ online }}</b>在线</div>
-    <div class="stat"><b>{{ total }}</b>全部客户端</div>
+    <div class="stat"><b>{{ online }}</b>Online</div>
+    <div class="stat"><b>{{ total }}</b>Total clients</div>
   </div>
 
   <div class="wrap">
     <table>
       <thead>
-        <tr><th>状态</th><th>IP 地址</th><th>地址</th><th>设备型号</th><th>系统</th><th>App 版本</th><th>请求数</th><th>最后访问</th><th>最后路径</th></tr>
+        <tr><th>Status</th><th>IP address</th><th>Location</th><th>Device</th><th>OS</th><th>App version</th><th>Requests</th><th>Last seen</th><th>Last path</th></tr>
       </thead>
       <tbody>
       {% for c in clients %}
         <tr>
-          <td><span class="dot {{ 'on' if c.online }}"></span>{{ '在线' if c.online else '离线' }}</td>
+          <td><span class="dot {{ 'on' if c.online }}"></span>{{ 'Online' if c.online else 'Offline' }}</td>
           <td class="mono">{{ c.ip or '-' }}</td>
           <td>{{ c.location }}{% if c.latitude is not none %} <span class="muted">({{ '%.2f'|format(c.latitude) }}, {{ '%.2f'|format(c.longitude) }})</span>{% endif %}</td>
           <td title="{{ c.user_agent or '' }}">{{ c.device }}</td>
@@ -61,7 +61,7 @@
           <td class="mono muted">{{ c.last_path or '' }}</td>
         </tr>
       {% else %}
-        <tr><td colspan="9" class="muted">还没有记录。部署新版服务端后，客户端的请求会出现在这里。</td></tr>
+        <tr><td colspan="9" class="muted">No connections recorded yet. Clients appear here once they call the server.</td></tr>
       {% endfor %}
       </tbody>
     </table>
